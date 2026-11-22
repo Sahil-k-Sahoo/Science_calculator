@@ -7,32 +7,23 @@ from tokenizer import Token
 @dataclass(frozen=True)
 class NumberNode:
     value: int | float
-
-
 @dataclass(frozen=True)
 class ConstNode:
     name: str
-
-
 @dataclass(frozen=True)
 class UnaryNode:
     op: str
     operand: "ExprNode"
-
-
 @dataclass(frozen=True)
 class BinaryNode:
     op: str
     left: "ExprNode"
     right: "ExprNode"
-
-
 @dataclass(frozen=True)
 class CallNode:
     name: str
     args: tuple["ExprNode", ...]
-
-
+    
 ExprNode = NumberNode | ConstNode | UnaryNode | BinaryNode | CallNode
 
 

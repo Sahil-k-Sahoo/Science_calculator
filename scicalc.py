@@ -1,5 +1,4 @@
 import sys
-
 from calc_errors import CalcError
 from evaluator import evaluate
 from parser import parse
@@ -46,7 +45,7 @@ def main() -> int:
         if type(result) is int:
             print(result)
         else:
-            print(repr(result))
+            print(str(result))
 
     return 0
 
