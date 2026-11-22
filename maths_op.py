@@ -91,7 +91,7 @@ def _fact(n: int | float) -> int:
         raise CalcDomainError("fact requires a non-negative integer")
     try:
         return math.factorial(iv)
-    except ValueError as exc:
+    except OverflowError as exc:
         raise CalcOverflowError("factorial overflow") from exc
 
 

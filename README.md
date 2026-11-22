@@ -1,7 +1,18 @@
-Markdown
-# SciCalc — Scientific Calculator (Problem B3)
+# SciCalc — Scientific Calculator
 
-Command-line scientific calculator implemented in Python using only the standard library, with a custom tokenizer, recursive-descent parser, and AST evaluator (no `eval`, `exec`, or `compile`).
+A command-line scientific calculator built in Python (using only the standard library). It safely evaluates mathematical expressions using a custom tokenizer, recursive-descent parser, and AST evaluator instead of `eval()`.
+
+## Features
+
+- **Arithmetic & Precedence**: Supports `+`, `-`, `*`, `/`, `%`, and `^` (power with right-associativity).
+- **Scientific Constants**: Built-in constants like `PI`, `E`, `c`, `G`, `h`, `Na`, `e`, `kB`, `epsilon0`, and `mu0`.
+- **Math Functions**:
+  - Trigonometry & Hyperbolic: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`
+  - Exponentials & Logs: `log` (ln), `log10`, `antilog`, `exp`
+  - Combinatorics: `fact` (n!), `nCr`, `nPr`
+  - Roots & Discrete: `root`, `floor`, `ceil`, `signum`, `heaviside`, `sigmoid`
+  - Number Theory: `gcd`, `lcm`, `totient`, `fusc`
+- **Error Handling**: Clear error messages for syntax errors, division by zero, invalid domains, and overflows without crashing.
 
 ## How to Run
 
@@ -9,69 +20,49 @@ Requires Python 3.10+.
 
 ```bash
 python scicalc.py
-Use py scicalc.py or python3 scicalc.py depending on your environment.
+```
+*(On Windows, you can also use `py scicalc.py`)*
 
-Interactive mode: Displays SciCalc>  when stdin is attached to a terminal (isatty() is true).
+To exit, type `exit` or `quit`.
 
-Piped / non-interactive mode: Prints no prompt; reads one expression per line from stdin until exit, quit (case-insensitive), or EOF. Blank lines are skipped.
+### Piped / Non-Interactive Mode
+You can also pipe expressions directly:
 
-Sample Session
-Plaintext
-SciCalc> G * (5.972e24) / (6371000 ^ 2)
-9.819973446927108
-SciCalc> sin(PI / 6) + nCr(5, 2)
-10.5
-SciCalc> totient(9)
-6
-SciCalc> fusc(10)
-3
-SciCalc> sigmoid(0)
-0.5
+```bash
+echo "sin(PI / 6) + nCr(5, 2)" | python scicalc.py
+```
+
+## Example Session
+
+```text
 SciCalc> 2 ^ 3 ^ 2
 512.0
+SciCalc> sin(PI / 6) + nCr(5, 2)
+10.5
+SciCalc> G * (5.972e24) / (6371000 ^ 2)
+9.819973446927108
+SciCalc> totient(9)
+6
 SciCalc> 1 / 0
 [ERROR] division by zero
 SciCalc> exit
-Design & Architecture
-Plaintext
-line (stdin)
-  -> tokenizer.py   (tokens: numbers, identifiers, operators, parentheses, commas)
-  -> parser.py      (recursive-descent AST respecting precedence and associativity)
-  -> evaluator.py   (evaluates AST using maths_op.py; raises calc_errors.py errors)
-  -> scicalc.py     (CLI loop, TTY vs. piped handling, result & [ERROR] output)
-Modules
-calc_errors.py: Defines the error hierarchy (CalcError, CalcSyntaxError, CalcDomainError, CalcOverflowError).
+```
 
-maths_op.py: Stores case-sensitive CONSTANTS (PI, E, h, G, Na, e, kB, epsilon0, mu0, c) and FUNCTIONS covering trigonometry, hyperbolic functions, logs/exponents, combinatorics, roots, discrete/step functions, and number theory.
+## Project Structure
 
-tokenizer.py: Converts input text into tokens, handles numbers (including .5 and 1.5e-3 / 6.022e23 while distinguishing 2e3 from 2*e), and rejects implied multiplication (2e, 2(3), 2 PI).
+- `scicalc.py` — Main entry point and CLI loop.
+- `tokenizer.py` — Breaks expressions into tokens (numbers, operators, identifiers).
+- `parser.py` — Builds the AST according to operator precedence and associativity.
+- `evaluator.py` — Walks the AST to calculate results and enforce integer vs float types.
+- `maths_op.py` — Contains all supported mathematical functions and constants.
+- `calc_errors.py` — Custom error classes for clean error reporting.
+- `test/` — Unit test suite for CLI, math operations, and parser.
 
-parser.py: Builds an AST with precedence from lowest to highest: +/- (left) -> *///% (left) -> unary +/- -> ^ (right-associative, allowing unary signs in exponents) -> literals, constants, parenthesized expressions, and comma-separated function calls.
+## Running Tests
 
-evaluator.py: Walks the AST, enforces integer vs. float result types, checks division/modulo by zero, and catches numeric overflow.
+To run all unit tests:
 
-scicalc.py: Manages stdin/stdout, exit/quit, and [ERROR] <message> output without exposing raw tracebacks.
-
-Assumptions & Choices
-Case sensitivity: Constant and function names are case-sensitive (PI and e work; pi and Pi raise an error).
-
-Integer vs. float outputs: / and ^ return floats; +, -, *, and % preserve integers when both operands are integers; integer-valued functions (fact, nCr, nPr, gcd, lcm, totient, fusc, floor, ceil, signum, heaviside) return integers (6, not 6.0).
-
-Modulo semantics: % follows Python's modulo behavior (for example, -7 % 3 evaluates to 2).
-
-Function conventions:
-
-antilog(x) computes 10.0 ** x and raises an overflow error if outside float limits.
-
-heaviside(x) returns 0 for x < 0 and 1 otherwise (including 0).
-
-tan(x) rejects values where cos(x) is effectively zero to catch asymptotes cleanly.
-
-root(x, n) requires a non-zero integer n and allows negative x only when n is odd.
-
-Integer-only functions reject non-whole numbers like 3.5 while accepting whole-valued floats like 5.0.
-
-Running Tests
-Bash
+```bash
 python -m unittest discover -s test -v
-(Or py -m unittest discover -s test -v on Windows.)
+```
+*(Or `py -m unittest discover -s test -v` on Windows)*
